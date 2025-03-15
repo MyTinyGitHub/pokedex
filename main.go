@@ -4,9 +4,12 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
+	"pokedexcli/internal/pokecache"
 	"strings"
+	"time"
 )
 
 type cliCommand struct {
@@ -46,6 +49,7 @@ func main() {
   config := Config{
     Next: "https://pokeapi.co/api/v2/location-area?offset=0&limit=20",
     Previous: "",
+    Cache: pokecache.NewCache(nil, time.Duration(time.Duration.Minutes(10))),
   }
 
 
@@ -55,9 +59,11 @@ func main() {
     fmt.Print("Pokedex > ")
     scanner.Scan()
     input := scanner.Text()
+
     if input == "" {
       exitCommand(&config)
     }
+
     input = strings.Fields(input)[0]
     input = strings.ToLower(input)
     command, ok := registry[input]
@@ -77,6 +83,7 @@ func main() {
 type Config struct {
   Next string
   Previous string
+  Cache pokecache.Cache
 }
 
 type LocationArea struct {
@@ -100,18 +107,43 @@ func helpCommand(config *Config) error {
   return nil
 }
 
-func getLocationAreas(url string) (LocationArea, error) {
+func getDataFromUrl(url string) ([]byte, error) {
   res, err := http.Get(url)
   if err != nil {
-    return LocationArea{}, err
+    return nil, err
   }
 
   defer res.Body.Close()
 
+  return io.ReadAll(res.Body)
+}
+
+func getData(url string, c *Config) ([]byte, error) {
+  value, ok := c.Cache.Get(url)
+  if !ok {
+    data, err := getDataFromUrl(url)
+    if err != nil {
+      return nil, err
+    }
+
+    c.Cache.Add(url, data)
+
+    return data, nil
+  }
+  fmt.Println("got from cache")
+  return value, nil
+}
+
+
+func getLocationAreas(url string, c *Config) (LocationArea, error) {
+  value, err := getData(url, c)
+  if err != nil {
+    return LocationArea{}, err
+  }
 
   var locations LocationArea
 
-  err = json.NewDecoder(res.Body).Decode(&locations)
+  err = json.Unmarshal(value, &locations)
   if err != nil {
     return LocationArea{}, fmt.Errorf("unable to unmarshal: %v", err)
   }
@@ -120,7 +152,7 @@ func getLocationAreas(url string) (LocationArea, error) {
 }
 
 func mapCommand(config *Config) error {
-  locations, err := getLocationAreas(config.Next)
+  locations, err := getLocationAreas(config.Next, config)
   if err != nil {
     return err
   }
@@ -141,7 +173,7 @@ func mapBackCommand(config *Config) error {
     return nil
   }
 
-  locations, err := getLocationAreas(config.Previous)
+  locations, err := getLocationAreas(config.Previous, config)
   if err != nil {
     return err
   }
