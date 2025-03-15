@@ -2,56 +2,51 @@ package main
 
 import (
 	"bufio"
-	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
 	"os"
 	"pokedexcli/internal/pokecache"
+	"pokedexcli/internal/pokeconfig"
+  "pokedexcli/commands"
 	"strings"
 	"time"
 )
 
-type cliCommand struct {
-  name string
-  description string
-  callback func(*Config) error
-}
 
-var registry map[string]cliCommand
+
+var registry map[string]pokeconfig.CliCommand
 
 func main() {
   scanner := bufio.NewScanner(os.Stdout)
 
-  registry = map[string]cliCommand{
+  registry = map[string]pokeconfig.CliCommand{
     "exit": {
-      name: "exit", 
-      description: "Exit the Pokedex",
-      callback: exitCommand,
+      Name: "exit", 
+      Description: "Exit the Pokedex",
+      Callback: commands.ExitCommand,
     },
     "help": {
-      name: "help", 
-      description: "Displays a help message",
-      callback: helpCommand,
+      Name: "help", 
+      Description: "Displays a help message",
+      Callback: commands.HelpCommand,
     },
     "map": {
-      name: "map",
-      description: "Get a list of 20 next pokemon locations",
-      callback: mapCommand,
+      Name: "map",
+      Description: "Get a list of 20 next pokemon locations",
+      Callback: commands.MapCommand,
     },
     "mapb": {
-      name: "map back",
-      description: "Get a list of 20 previous pokemon locations",
-      callback: mapBackCommand,
+      Name: "map back",
+      Description: "Get a list of 20 previous pokemon locations",
+      Callback: commands.MapBackCommand,
     },
   }
 
-  config := Config{
+  config := pokeconfig.Config{
     Next: "https://pokeapi.co/api/v2/location-area?offset=0&limit=20",
     Previous: "",
     Cache: pokecache.NewCache(nil, time.Duration(time.Duration.Minutes(10))),
+    Registry: registry,
   }
-
 
   fmt.Println("Welcome to the Pokedex!")
 
@@ -61,7 +56,7 @@ func main() {
     input := scanner.Text()
 
     if input == "" {
-      exitCommand(&config)
+      commands.ExitCommand(&config)
     }
 
     input = strings.Fields(input)[0]
@@ -72,126 +67,12 @@ func main() {
       continue
     }
 
-    err := command.callback(&config)
+    err := command.Callback(&config)
     if err != nil {
       fmt.Print(err)
-      exitCommand(&config)
+      commands.ExitCommand(&config)
     }
   }
-}
-
-type Config struct {
-  Next string
-  Previous string
-  Cache pokecache.Cache
-}
-
-type LocationArea struct {
-  Count int `json:"count"`
-  Next string `json:"next"`
-  Previous string `json:"previous"`
-  Location []LocationResults `json:"results"`
-}
-
-type LocationResults struct {
-  Name string `json:"name"`
-  Url string `json:"url"`
-}
-
-
-func helpCommand(config *Config) error {
-  for _, value := range registry {
-      fmt.Printf("%v: %v\n", value.name, value.description)
-  }
-
-  return nil
-}
-
-func getDataFromUrl(url string) ([]byte, error) {
-  res, err := http.Get(url)
-  if err != nil {
-    return nil, err
-  }
-
-  defer res.Body.Close()
-
-  return io.ReadAll(res.Body)
-}
-
-func getData(url string, c *Config) ([]byte, error) {
-  value, ok := c.Cache.Get(url)
-  if !ok {
-    data, err := getDataFromUrl(url)
-    if err != nil {
-      return nil, err
-    }
-
-    c.Cache.Add(url, data)
-
-    return data, nil
-  }
-  fmt.Println("got from cache")
-  return value, nil
-}
-
-
-func getLocationAreas(url string, c *Config) (LocationArea, error) {
-  value, err := getData(url, c)
-  if err != nil {
-    return LocationArea{}, err
-  }
-
-  var locations LocationArea
-
-  err = json.Unmarshal(value, &locations)
-  if err != nil {
-    return LocationArea{}, fmt.Errorf("unable to unmarshal: %v", err)
-  }
-
-  return locations, nil
-}
-
-func mapCommand(config *Config) error {
-  locations, err := getLocationAreas(config.Next, config)
-  if err != nil {
-    return err
-  }
-
-  config.Next = locations.Next
-  config.Previous = locations.Previous
-
-  for _, location := range locations.Location {
-    fmt.Println(location.Name)
-  }
-
-  return nil
-}
-
-func mapBackCommand(config *Config) error {
-  if(config.Previous == "") {
-    fmt.Println("You're on the first page")
-    return nil
-  }
-
-  locations, err := getLocationAreas(config.Previous, config)
-  if err != nil {
-    return err
-  }
-
-  config.Next = locations.Next
-  config.Previous = locations.Previous
-
-  for _, location := range locations.Location {
-    fmt.Println(location.Name)
-  }
-
-  return nil
-}
-
-func exitCommand(config *Config) error {
-  fmt.Println("Closing the Pokedex... Goodbye!")
-  os.Exit(0)
-  return nil
 }
 
 func cleanInput(text string) []string {
