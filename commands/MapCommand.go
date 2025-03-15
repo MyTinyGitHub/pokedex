@@ -9,95 +9,93 @@ import (
 )
 
 type LocationArea struct {
-  Count int `json:"count"`
-  Next string `json:"next"`
-  Previous string `json:"previous"`
-  Location []LocationResults `json:"results"`
+	Count    int               `json:"count"`
+	Next     string            `json:"next"`
+	Previous string            `json:"previous"`
+	Location []LocationResults `json:"results"`
 }
 
 type LocationResults struct {
-  Name string `json:"name"`
-  Url string `json:"url"`
+	Name string `json:"name"`
+	Url  string `json:"url"`
 }
 
 func MapCommand(config *pokeconfig.Config) error {
-  locations, err := getLocationAreas(config.Next, config)
-  if err != nil {
-    return err
-  }
+	locations, err := getLocationAreas(config.Next, config)
+	if err != nil {
+		return err
+	}
 
-  config.Next = locations.Next
-  config.Previous = locations.Previous
+	config.Next = locations.Next
+	config.Previous = locations.Previous
 
-  for _, location := range locations.Location {
-    fmt.Println(location.Name)
-  }
+	for _, location := range locations.Location {
+		fmt.Println(location.Name)
+	}
 
-  return nil
+	return nil
 }
 
 func MapBackCommand(config *pokeconfig.Config) error {
-  if(config.Previous == "") {
-    fmt.Println("You're on the first page")
-    return nil
-  }
+	if config.Previous == "" {
+		fmt.Println("You're on the first page")
+		return nil
+	}
 
-  locations, err := getLocationAreas(config.Previous, config)
-  if err != nil {
-    return err
-  }
+	locations, err := getLocationAreas(config.Previous, config)
+	if err != nil {
+		return err
+	}
 
-  config.Next = locations.Next
-  config.Previous = locations.Previous
+	config.Next = locations.Next
+	config.Previous = locations.Previous
 
-  for _, location := range locations.Location {
-    fmt.Println(location.Name)
-  }
+	for _, location := range locations.Location {
+		fmt.Println(location.Name)
+	}
 
-  return nil
+	return nil
 }
 
 func getDataFromUrl(url string) ([]byte, error) {
-  res, err := http.Get(url)
-  if err != nil {
-    return nil, err
-  }
+	res, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
 
-  defer res.Body.Close()
+	defer res.Body.Close()
 
-  return io.ReadAll(res.Body)
+	return io.ReadAll(res.Body)
 }
 
 func getData(url string, c *pokeconfig.Config) ([]byte, error) {
-  value, ok := c.Cache.Get(url)
-  if !ok {
-    data, err := getDataFromUrl(url)
-    if err != nil {
-      return nil, err
-    }
+	value, ok := c.Cache.Get(url)
+	if !ok {
+		data, err := getDataFromUrl(url)
+		if err != nil {
+			return nil, err
+		}
 
-    c.Cache.Add(url, data)
+		c.Cache.Add(url, data)
 
-    return data, nil
-  }
-  fmt.Println("got from cache")
-  return value, nil
+		return data, nil
+	}
+	fmt.Println("got from cache")
+	return value, nil
 }
-
 
 func getLocationAreas(url string, c *pokeconfig.Config) (LocationArea, error) {
-  value, err := getData(url, c)
-  if err != nil {
-    return LocationArea{}, err
-  }
+	value, err := getData(url, c)
+	if err != nil {
+		return LocationArea{}, err
+	}
 
-  var locations LocationArea
+	var locations LocationArea
 
-  err = json.Unmarshal(value, &locations)
-  if err != nil {
-    return LocationArea{}, fmt.Errorf("unable to unmarshal: %v", err)
-  }
+	err = json.Unmarshal(value, &locations)
+	if err != nil {
+		return LocationArea{}, fmt.Errorf("unable to unmarshal: %v", err)
+	}
 
-  return locations, nil
+	return locations, nil
 }
-

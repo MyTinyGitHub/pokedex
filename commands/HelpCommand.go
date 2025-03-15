@@ -6,9 +6,9 @@ import (
 )
 
 func HelpCommand(config *pokeconfig.Config) error {
-  for _, value := range config.Registry {
-      fmt.Printf("%v: %v\n", value.Name, value.Description)
-  }
+	for _, value := range config.Registry {
+		fmt.Printf("%v: %v\n", value.Name, value.Description)
+	}
 
-  return nil
+	return nil
 }
