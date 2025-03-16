@@ -49,7 +49,7 @@ func main() {
 	fmt.Println("Welcome to the Pokedex!")
 
 	for {
-		fmt.Print("Pokedex > ")
+		//fmt.Print("Pokedex > ")
 		scanner.Scan()
 		input := internal.CleanInput(scanner.Text())[0]
 
