@@ -12,7 +12,6 @@ import (
 )
 
 var registry map[string]pokeconfig.CliCommand
-var caughtPokemon map[string]internal.Pokemon
 
 func main() {
 	scanner := bufio.NewScanner(os.Stdout)
@@ -48,6 +47,11 @@ func main() {
 			Description: "Attempt to catch a pokemon",
 			Callback:    commands.Catch,
 		},
+		"inspect": {
+			Name:        "inspect",
+			Description: "Inspect a caught pokemon",
+			Callback:    commands.Inspect,
+		},
 	}
 
 	config := pokeconfig.Config{
@@ -55,7 +59,7 @@ func main() {
 		Previous: "",
 		Cache:    pokecache.NewCache(nil, time.Duration(time.Duration.Minutes(10))),
 		Registry: registry,
-    CaughtPokemon: caughtPokemon,
+    CaughtPokemon: make(map[string]internal.Pokemon),
 	}
 
 	fmt.Println("Welcome to the Pokedex!")

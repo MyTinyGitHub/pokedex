@@ -288,3 +288,17 @@ func (p Pokemon) TryCatch() bool {
   fmt.Printf("%v was caught\n", p.Name)
   return true
 }
+
+func (p Pokemon) WriteStats() {
+  fmt.Printf("Name: %v \n", p.Name)
+  fmt.Printf("Hegiht: %v \n", p.Height)
+  fmt.Printf("Weight: %v \n", p.Weight)
+  fmt.Printf("Stats: \n")
+  for _, stat := range p.Stats {
+    fmt.Printf("  - %v: %v \n", stat.Stat.Name, stat.BaseStat)
+  }
+  fmt.Printf("Types: \n")
+  for _, typ := range p.Types {
+    fmt.Printf("  - %v\n", typ.Type.Name)
+  }
+}
