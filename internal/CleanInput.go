@@ -1,7 +1,7 @@
 package internal
 
 import (
-  "strings"
+	"strings"
 )
 
 func CleanInput(text string) []string {
@@ -10,7 +10,7 @@ func CleanInput(text string) []string {
 	//result := make([]string, 0)
 
 	//for _, word := range split {
-		//result = append(result, strings.ToLower(word))
+	//result = append(result, strings.ToLower(word))
 	//}
 
 	return result

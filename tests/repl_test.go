@@ -1,8 +1,8 @@
 package tests
 
 import (
+	"pokedexcli/internal"
 	"testing"
-  "pokedexcli/internal"
 )
 
 func TestCleanInput(t *testing.T) {

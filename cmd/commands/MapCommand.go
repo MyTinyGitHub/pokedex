@@ -20,7 +20,7 @@ type LocationResults struct {
 	Url  string `json:"url"`
 }
 
-func MapCommand(config *pokeconfig.Config) error {
+func MapCommand(config *pokeconfig.Config, input []string) error {
 	locations, err := getLocationAreas(config.Next, config)
 	if err != nil {
 		return err
@@ -36,7 +36,7 @@ func MapCommand(config *pokeconfig.Config) error {
 	return nil
 }
 
-func MapBackCommand(config *pokeconfig.Config) error {
+func MapBackCommand(config *pokeconfig.Config, input []string) error {
 	if config.Previous == "" {
 		fmt.Println("You're on the first page")
 		return nil

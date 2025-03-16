@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"os"
 	"pokedexcli/cmd/commands"
+	"pokedexcli/internal"
 	"pokedexcli/internal/pokecache"
 	"pokedexcli/internal/pokeconfig"
-  "pokedexcli/internal"
 	"time"
 )
 
@@ -37,6 +37,11 @@ func main() {
 			Description: "Get a list of 20 previous pokemon locations",
 			Callback:    commands.MapBackCommand,
 		},
+		"explore": {
+			Name:        "explore",
+			Description: "Get information about area",
+			Callback:    commands.ExploreCommand,
+		},
 	}
 
 	config := pokeconfig.Config{
@@ -49,25 +54,29 @@ func main() {
 	fmt.Println("Welcome to the Pokedex!")
 
 	for {
-		//fmt.Print("Pokedex > ")
+		fmt.Print("Pokedex > ")
 		scanner.Scan()
-		input := internal.CleanInput(scanner.Text())[0]
+		input := internal.CleanInput(scanner.Text())
 
-		if input == "" {
-			commands.ExitCommand(&config)
+
+		if len(input) == 0 {
+      stringlings := [2]string{"a", "pastoria-city-area"}
+      commands.ExploreCommand(&config,stringlings[:])
+			commands.ExitCommand(&config, nil)
 		}
 
-		command, ok := registry[input]
+		inputCommand := input[0]
+
+		command, ok := registry[inputCommand]
 
 		if !ok {
 			continue
 		}
 
-		err := command.Callback(&config)
+		err := command.Callback(&config, input)
 		if err != nil {
 			fmt.Print(err)
-			commands.ExitCommand(&config)
+      commands.ExitCommand(&config, nil)
 		}
 	}
 }
-
