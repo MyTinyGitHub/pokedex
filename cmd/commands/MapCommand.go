@@ -80,7 +80,6 @@ func getData(url string, c *pokeconfig.Config) ([]byte, error) {
 
 		return data, nil
 	}
-	fmt.Println("got from cache")
 	return value, nil
 }
 

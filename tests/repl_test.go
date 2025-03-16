@@ -1,7 +1,8 @@
-package main
+package tests
 
 import (
 	"testing"
+  "pokedexcli/internal"
 )
 
 func TestCleanInput(t *testing.T) {
@@ -16,7 +17,7 @@ func TestCleanInput(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		actual := cleanInput(c.input)
+		actual := internal.CleanInput(c.input)
 
 		if len(actual) != len(c.expected) {
 			t.Errorf("Expected and actual slice differ in length, actual %v - expected %v", len(actual), len(c.expected))

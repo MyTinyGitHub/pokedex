@@ -4,10 +4,10 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"pokedexcli/commands"
+	"pokedexcli/cmd/commands"
 	"pokedexcli/internal/pokecache"
 	"pokedexcli/internal/pokeconfig"
-	"strings"
+  "pokedexcli/internal"
 	"time"
 )
 
@@ -51,14 +51,12 @@ func main() {
 	for {
 		fmt.Print("Pokedex > ")
 		scanner.Scan()
-		input := scanner.Text()
+		input := internal.CleanInput(scanner.Text())[0]
 
 		if input == "" {
 			commands.ExitCommand(&config)
 		}
 
-		input = strings.Fields(input)[0]
-		input = strings.ToLower(input)
 		command, ok := registry[input]
 
 		if !ok {
@@ -73,14 +71,3 @@ func main() {
 	}
 }
 
-func cleanInput(text string) []string {
-	trimmed := strings.Trim(text, " ")
-	split := strings.Split(trimmed, " ")
-	result := make([]string, 0)
-
-	for _, word := range split {
-		result = append(result, strings.ToLower(word))
-	}
-
-	return result
-}

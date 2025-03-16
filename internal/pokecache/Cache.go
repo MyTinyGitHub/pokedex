@@ -7,11 +7,11 @@ import (
 
 type cacheEntry struct {
 	createdAt time.Time
-	val       []byte
+	Val       []byte
 }
 
 type Cache struct {
-	entries map[string]cacheEntry
+	Entries map[string]cacheEntry
 	m       *sync.Mutex
 }
 
@@ -22,7 +22,7 @@ func NewCache(c *Cache, interval time.Duration) Cache {
 	}
 
 	return Cache{
-		entries: make(map[string]cacheEntry),
+		Entries: make(map[string]cacheEntry),
 		m:       &sync.Mutex{},
 	}
 }
@@ -30,36 +30,36 @@ func NewCache(c *Cache, interval time.Duration) Cache {
 func (c *Cache) Add(key string, val []byte) {
 	c.m.Lock()
 
-	entry, ok := c.entries[key]
+	entry, ok := c.Entries[key]
 
 	if ok {
-		entry.val = val
+		entry.Val = val
 	} else {
 		entry = cacheEntry{
 			createdAt: time.Now(),
-			val:       val,
+			Val:       val,
 		}
 
 	}
 
-	c.entries[key] = entry
+	c.Entries[key] = entry
 
 	c.m.Unlock()
 }
 
 func (c *Cache) Get(key string) ([]byte, bool) {
-	entry, ok := c.entries[key]
+	entry, ok := c.Entries[key]
 	if ok {
-		return entry.val, ok
+		return entry.Val, ok
 	}
 	return nil, ok
 }
 
 func (c *Cache) reap(interval time.Duration) {
 	c.m.Lock()
-	for key, value := range c.entries {
+	for key, value := range c.Entries {
 		if time.Until(value.createdAt) > interval {
-			delete(c.entries, key)
+			delete(c.Entries, key)
 		}
 	}
 	c.m.Unlock()
