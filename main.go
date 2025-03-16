@@ -12,6 +12,7 @@ import (
 )
 
 var registry map[string]pokeconfig.CliCommand
+var caughtPokemon map[string]internal.Pokemon
 
 func main() {
 	scanner := bufio.NewScanner(os.Stdout)
@@ -20,27 +21,32 @@ func main() {
 		"exit": {
 			Name:        "exit",
 			Description: "Exit the Pokedex",
-			Callback:    commands.ExitCommand,
+			Callback:    commands.Exit,
 		},
 		"help": {
 			Name:        "help",
 			Description: "Displays a help message",
-			Callback:    commands.HelpCommand,
+			Callback:    commands.Help,
 		},
 		"map": {
 			Name:        "map",
 			Description: "Get a list of 20 next pokemon locations",
-			Callback:    commands.MapCommand,
+			Callback:    commands.Map,
 		},
 		"mapb": {
 			Name:        "map back",
 			Description: "Get a list of 20 previous pokemon locations",
-			Callback:    commands.MapBackCommand,
+			Callback:    commands.MapBack,
 		},
 		"explore": {
 			Name:        "explore",
 			Description: "Get information about area",
-			Callback:    commands.ExploreCommand,
+			Callback:    commands.Explore,
+		},
+		"catch": {
+			Name:        "catch",
+			Description: "Attempt to catch a pokemon",
+			Callback:    commands.Catch,
 		},
 	}
 
@@ -49,6 +55,7 @@ func main() {
 		Previous: "",
 		Cache:    pokecache.NewCache(nil, time.Duration(time.Duration.Minutes(10))),
 		Registry: registry,
+    CaughtPokemon: caughtPokemon,
 	}
 
 	fmt.Println("Welcome to the Pokedex!")
@@ -60,9 +67,9 @@ func main() {
 
 
 		if len(input) == 0 {
-      stringlings := [2]string{"a", "pastoria-city-area"}
-      commands.ExploreCommand(&config,stringlings[:])
-			commands.ExitCommand(&config, nil)
+      stringlings := [2]string{"a", "squirtle"}
+      commands.Catch(&config, stringlings[:])
+			commands.Exit(&config, nil)
 		}
 
 		inputCommand := input[0]
@@ -76,7 +83,7 @@ func main() {
 		err := command.Callback(&config, input)
 		if err != nil {
 			fmt.Print(err)
-      commands.ExitCommand(&config, nil)
+      commands.Exit(&config, nil)
 		}
 	}
 }

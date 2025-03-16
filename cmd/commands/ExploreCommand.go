@@ -1,18 +1,18 @@
 package commands
 
 import (
-  "pokedexcli/internal/pokeconfig"
-  "fmt"
-  "net/http"
-  "io"
-  "encoding/json"
+	"encoding/json"
+	"fmt"
+	"pokedexcli/internal"
+	"pokedexcli/internal/pokeconfig"
 )
 
-func ExploreCommand(c *pokeconfig.Config, input []string) error {
+func Explore(c *pokeconfig.Config, input []string) error {
   area := input[1]
   _, ok := c.Cache.Get(area)
   if !ok { 
-    data, err := getFromServerRequest(area)
+    fullUrl := fmt.Sprintf("https://pokeapi.co/api/v2/location-area/%v", area)
+    data, err := internal.GetFromUrl(fullUrl)
     if err != nil {
       return err
     }
@@ -37,24 +37,6 @@ func ExploreCommand(c *pokeconfig.Config, input []string) error {
   }
 
   return nil
-}
-
-func getFromServerRequest(area string) ([]byte, error) {
-    fullUrl := fmt.Sprintf("https://pokeapi.co/api/v2/location-area/%v", area)
-    res, err := http.Get(fullUrl)
-
-    if err != nil {
-      return nil, err
-    }
-
-    defer res.Body.Close()
-
-    data, err := io.ReadAll(res.Body)
-    if err != nil {
-      return nil, err
-    }
-
-    return data, nil
 }
 
 type ExplorePokeApi struct {
