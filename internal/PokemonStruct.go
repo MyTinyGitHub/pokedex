@@ -265,7 +265,7 @@ type Pokemon struct {
 	PastTypes []struct {
 		Generation struct {
 			Name string `json:"name"`
-			URL  string `json:"url"`
+      URL  string `json:"url"`
 		} `json:"generation"`
 		Types []struct {
 			Slot int `json:"slot"`
@@ -278,7 +278,7 @@ type Pokemon struct {
 }
 
 func (p Pokemon) TryCatch() bool {
-  percent := 100 / p.BaseExperience
+  percent := 0.75
 
   if rand.Float32() < float32(percent) {
     fmt.Printf("%v escaped\n", p.Name)

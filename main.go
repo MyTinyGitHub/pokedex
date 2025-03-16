@@ -52,6 +52,11 @@ func main() {
 			Description: "Inspect a caught pokemon",
 			Callback:    commands.Inspect,
 		},
+		"pokedex": {
+			Name:        "pokedex",
+			Description: "Show all pokemon you have caught",
+			Callback:    commands.Pokedex,
+		},
 	}
 
 	config := pokeconfig.Config{
@@ -71,8 +76,6 @@ func main() {
 
 
 		if len(input) == 0 {
-      stringlings := [2]string{"a", "squirtle"}
-      commands.Catch(&config, stringlings[:])
 			commands.Exit(&config, nil)
 		}
 
